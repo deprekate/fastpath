@@ -31,11 +31,11 @@ e
 The structure of the graph looks like:
 
 ```sh
-a─────▶b◀─────f
-│      │
-│      │
-▼      ▼
-c─────▶d─────▶e
+a ─────▶ b ◀───── f
+│        │
+│        │
+▼        ▼
+c ─────▶ d ─────▶ e
 ```
 
 * Strings can be used for the nodes, and the weights can be positive or negative long double 
