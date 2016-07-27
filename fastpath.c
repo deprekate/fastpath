@@ -100,8 +100,11 @@ void CheckNegativeWeightCycle(long double *dist){
 		int u = s->src;
 		int v = s->dst;
 		long double weight = s->weight;
-		if (dist[u] != INFINITE && dist[u] + weight < dist[v])
-			printf("Graph contains negative weight cycle: %i %i \n", u, v);
+		if (dist[u] != INFINITE && dist[u] + weight < dist[v]){
+			printf("ERROR: Graph contains negative weight cycle\n");
+        		exit(EXIT_FAILURE);
+		}
+			
 	}
 }
 void CheckPath(int *parent, int src, int dst){
