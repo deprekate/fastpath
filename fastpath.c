@@ -230,13 +230,13 @@ int main(int argc, char *argv[]) {
 
 	HASH_FIND_STR( nodes, source, node);
 	if(node == NULL){
-		printf("ERROR: Source node not found\n");
+		printf("ERROR: Source node %s not found\n", source);
 		exit(EXIT_FAILURE);
 	}
 	src = node->id;
 	HASH_FIND_STR( nodes, target, node);
 	if(node == NULL){
-		printf("ERROR: Target node not found\n");
+		printf("ERROR: Target node %s not found\n", target);
 		exit(EXIT_FAILURE);
 	}
 	dst = node->id;
