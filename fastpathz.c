@@ -147,7 +147,7 @@ void GetPath(int *parent, int src, int dst){
 	}
 }
 void print_usage() {
-    printf("Usage: fastpath_i --source START_NODE --target END_NODE < NODES_FILE\n\n");
+    printf("Usage: fastpathz --source START_NODE --target END_NODE < NODES_FILE\n\n");
     printf("The NODE_file is a three column list, where the first column is the source node,\n");
     printf("the second column is the destination node, and the third column is the weight.\n");
 }
