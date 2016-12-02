@@ -94,7 +94,7 @@ void BellmanFord(int V, mpz_t *dist, int *parent){
 			mpz_t weight;
 			mpz_init_set(weight, s->weight);
 			mpz_add(temp, dist[u], weight);
-			if(mpz_cmp(dist[u],INFINITE)!=0 && mpz_cmp(dist[v],temp)>0){
+			if(mpz_cmp(dist[v],temp)>0){
 				mpz_set(dist[v], temp);
 				parent[v] = u;
 			}
@@ -112,7 +112,7 @@ void CheckNegativeWeightCycle(mpz_t *dist){
 		mpz_t weight;
 		mpz_init_set(weight, s->weight);
 		mpz_add(temp, dist[u], weight);
-		if(mpz_cmp(dist[u], INFINITE)!=0 && mpz_cmp(dist[v],temp)>0){
+		if(mpz_cmp(dist[u],INFINITE)!=0 && mpz_cmp(dist[v],temp)>0){
 			printf("ERROR: Graph contains negative weight cycle\n");
         		exit(EXIT_FAILURE);
 		}
@@ -188,7 +188,6 @@ int main(int argc, char *argv[]) {
 /*-----------------------------------------------------------------------------------------------*/
 /* Read in node data from stdin                                                                  */
 /*-----------------------------------------------------------------------------------------------*/
-
 	struct my_node *node;
 	struct my_name *name;
 	char buf[256];
@@ -239,7 +238,7 @@ int main(int argc, char *argv[]) {
 		mpz_set_f(weight, weight_f);
 		add_edge(e, src, dst, weight);
 		mpz_init(temp);
-		if(mpz_sgn(weight)){
+		if(mpz_sgn(weight)>0){
 			mpz_add(temp, INFINITE, weight);
 			mpz_set(INFINITE, temp);
 		}
@@ -252,7 +251,6 @@ int main(int argc, char *argv[]) {
 /*-----------------------------------------------------------------------------------------------*/
 /* Run path finding algorithm                                                                    */
 /*-----------------------------------------------------------------------------------------------*/
-
 
 	HASH_FIND_STR( nodes, source, node);
 	if(node == NULL){
@@ -270,7 +268,7 @@ int main(int argc, char *argv[]) {
 	int V = HASH_COUNT(nodes);
 	int parent[V];
 	mpz_t dist[V];
-
+	
 	InitializeGraph(V, dist, parent, src);
 	BellmanFord(V, dist, parent);
 	CheckNegativeWeightCycle(dist); 
