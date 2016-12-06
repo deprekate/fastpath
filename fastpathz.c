@@ -83,11 +83,12 @@ void InitializeGraph(int V, mpz_t *dist, int *parent, int src){
 	mpz_set_str(dist[src], "0", 10);
 }
 void BellmanFord(int V, mpz_t *dist, int *parent){
-	int i;
+	int i, flag;
 	struct my_edge *s;
 	mpz_t temp;
 	mpz_init(temp);
 	for (i = 1; i < V; i++){
+		flag = 1;
 		for(s=edges; s != NULL; s=s->hh.next) {
 			int u = s->src;
 			int v = s->dst;
@@ -97,7 +98,11 @@ void BellmanFord(int V, mpz_t *dist, int *parent){
 			if(mpz_cmp(dist[v],temp)>0){
 				mpz_set(dist[v], temp);
 				parent[v] = u;
+				flag = 0;
 			}
+		}
+		if(flag){
+			return;
 		}
 	}
 	mpz_clear(temp);

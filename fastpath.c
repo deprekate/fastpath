@@ -79,10 +79,11 @@ void InitializeGraph(int V, long double *dist, int *parent, int src){
 	dist[src] = 0;
 }
 void BellmanFord(int V, long double *dist, int *parent){
-	int i;
+	int i, flag;
 	struct my_edge *s;
 
 	for (i = 1; i < V; i++){
+		flag = 1;
 		for(s=edges; s != NULL; s=s->hh.next) {
 			int u = s->src;
 			int v = s->dst;
@@ -90,8 +91,12 @@ void BellmanFord(int V, long double *dist, int *parent){
 			if (dist[u] != INFINITE && dist[u] + weight < dist[v]){
 				dist[v] = dist[u] + weight;
 				parent[v] = u;
+				flag = 0;
 			}
 		}
+		if(flag){
+                        return;
+                }
 	}
 }
 void CheckNegativeWeightCycle(long double *dist){
