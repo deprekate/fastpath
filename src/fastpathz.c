@@ -1,6 +1,6 @@
 /* 
 
-    fastpath
+    fastpathz
 
     Copyright (C) 2016 Katelyn McNair and Robert Edwards
 

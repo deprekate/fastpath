@@ -11,7 +11,8 @@ To install `fastpath`,
 git clone git@github.com:deprekate/fastpath.git
 cd fastpath; make
 ```
-The only library dependency is uthash (which is included).
+The only library dependency for fastpath is uthash (which is included).
+The fastpathz has the extra dependency of mini-gmp (which is included).
 
 Fastpath Example
 --------------
