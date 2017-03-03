@@ -220,7 +220,7 @@ void print_usage() {
 
 int main(int argc, char *argv[]) {
 	mpz_init(INFINITE);
-	char *source = "1", *target = "2";
+	char *source = "", *target = "";
 	int opt= 0;
 	static struct option long_options[] = {
 	  {"source",  required_argument, 0, 's'},
@@ -235,7 +235,7 @@ int main(int argc, char *argv[]) {
 			case 't' : target = optarg;
 				break;
 			default: print_usage(); 
-				//exit(EXIT_FAILURE);
+				exit(EXIT_FAILURE);
 		}
 	}
 	if(source[0] == '\0' || target[0] == '\0'){
@@ -264,6 +264,7 @@ int main(int argc, char *argv[]) {
 	while (fgets (buf, sizeof(buf), stdin)) {
 		buf[strcspn(buf, "\n")] = 0;
 		token = strtok(buf, "\t");	
+
 		HASH_FIND_STR( nodes, token, node);
 		if(node == NULL){
 			node = (struct my_node*)malloc(sizeof(struct my_node));
