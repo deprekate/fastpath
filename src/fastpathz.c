@@ -35,14 +35,14 @@ mpz_t INFINITE;
 const char * remove_decimals(const char *str){
         char *output;
         int c, i, len;
-        for (i = 0; i <= strlen(str); i++){
+        for (i = 0; i < strlen(str); i++){
                 c = (unsigned char) str[i];
                 if(c == '.'){
                         break;
                 }
 		len = i+1;
         }
-        output = malloc(len);
+        output = malloc(len+1);
         strncpy(output, str, len);
 	output[len] = '\0';
         return output;
@@ -220,7 +220,7 @@ void print_usage() {
 
 int main(int argc, char *argv[]) {
 	mpz_init(INFINITE);
-	char *source = "", *target = "";
+	char *source = "1", *target = "2";
 	int opt= 0;
 	static struct option long_options[] = {
 	  {"source",  required_argument, 0, 's'},
@@ -235,7 +235,7 @@ int main(int argc, char *argv[]) {
 			case 't' : target = optarg;
 				break;
 			default: print_usage(); 
-				exit(EXIT_FAILURE);
+				//exit(EXIT_FAILURE);
 		}
 	}
 	if(source[0] == '\0' || target[0] == '\0'){
@@ -264,7 +264,6 @@ int main(int argc, char *argv[]) {
 	while (fgets (buf, sizeof(buf), stdin)) {
 		buf[strcspn(buf, "\n")] = 0;
 		token = strtok(buf, "\t");	
-		
 		HASH_FIND_STR( nodes, token, node);
 		if(node == NULL){
 			node = (struct my_node*)malloc(sizeof(struct my_node));
