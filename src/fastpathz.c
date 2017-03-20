@@ -219,7 +219,7 @@ void print_usage() {
 
 
 int main(int argc, char *argv[]) {
-	mpz_init(INFINITE);
+	mpz_init_set_str(INFINITE, "1", 10);
 	char *source = "", *target = "";
 	int opt= 0;
 	static struct option long_options[] = {
