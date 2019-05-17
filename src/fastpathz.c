@@ -179,12 +179,12 @@ void CheckNegativeWeightCycle(mpz_t *dist, struct my_name *names){
 		mpz_init_set(weight, s->weight);
 		mpz_add(temp, dist[u], weight);
 		if(mpz_cmp(dist[u],INFINITE)!=0 && mpz_cmp(dist[v],temp)>0){
-			printf("ERROR: Graph contains negative weight cycle\n");
-			printf("%i - %i\n", u, v);
+			printf("ERROR: Graph contains negative weight cycle!");
+			printf(" u=%i v=%i", u, v);
 			HASH_FIND_INT(names, &u, name);
-			printf("%s\n", name->value);
+			printf(" TARGET=%s", name->value);
 			HASH_FIND_INT(names, &v, name);
-			printf("%s\n", name->value);
+			printf(" SOURCE=%s\n", name->value);
         		exit(EXIT_FAILURE);
 		}
 			
