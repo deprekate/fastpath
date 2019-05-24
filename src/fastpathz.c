@@ -76,14 +76,12 @@ const char * expand_scinote(const char *str){
                         int_size = i;
                 }
         }
-        //printf("int_size: %Zu   expptr: %s   str_size: %Zu\n", int_size, expptr, exp_size);
         size = int_size + strtol(expptr, &ptr, 10);
         output = malloc(size + 1);
         for(i = 0; i < size; i++){
                 output[i] = '0';
         }
         for(i = 0; i < int_size; i++){
-                //printf("str[i]: %c\n", str[i]);
                 output[i] = str[i];
         }
         for(i = int_size+1; i < exp_size; i++){
@@ -109,7 +107,6 @@ void add_edge(int edge_id, int src, int dst, mpz_t weight) {
 	s->src = src;
 	s->dst = dst;
 	mpz_init(s->weight);
-	//s->weight = weight;
 	mpz_set(s->weight, weight);
 	HASH_ADD_INT( edges, id, s );
 }
@@ -156,12 +153,7 @@ void BellmanFord(int V, mpz_t *dist, int *parent){
 			mpz_init_set(weight, s->weight);
 			mpz_add(temp, dist[u], weight);
 	
-			//printf("   ");
 			//mpz_out_str(stdout,10,weight);
-			//printf(" ");
-			//mpz_out_str(stdout,10,dist[u]);
-			//printf("  ");
-			//mpz_out_str(stdout,10,temp);
 			if(mpz_cmp(dist[v],temp)>0){
 				mpz_set(dist[v], temp);
 				parent[v] = u;
@@ -169,7 +161,7 @@ void BellmanFord(int V, mpz_t *dist, int *parent){
 			}
 		}
 		if(flag){
-			//return;
+			return;
 		}
 	}
 	mpz_clear(temp);
@@ -203,14 +195,12 @@ void CheckPath(int *parent, int src, int dst){
 	int child = dst;
 	while(child >= 0){
 		HASH_FIND_INT(names, &child, name);
-		//printf("%i - %s\n", child, name->value);
 		if(child == src){
 			return;
 		}
 		child = parent[child];
 	}
 	HASH_FIND_INT(names, &src, name);
-	//printf("Want to reach: %i - %s\n", src, name->value);
 	printf("ERROR: No path to target\n");
         exit(EXIT_FAILURE);
 }
@@ -276,7 +266,7 @@ int main(int argc, char *argv[]) {
 	char buf[256];
 	char *token;
 	int src, dst;
-	mpz_t weight, temp;
+	mpz_t weight;
 	int e = 0;
 	int n = 0;
 	while (fgets (buf, sizeof(buf), stdin)) {
@@ -350,18 +340,6 @@ int main(int argc, char *argv[]) {
 	
 	InitializeGraph(V, dist, parent, src);
 	BellmanFord(V, dist, parent);
-/*	int i;
-	int j;
-	for (i = 1; i < V; i++){
-		HASH_FIND_INT(names, &i, name);
-		printf("parent[%i] = %i\t\t\t%s\t->\t", i, parent[i], name->value);
-		j = parent[i];
-		if(j >=0){
-			HASH_FIND_INT(names, &j, name);
-			printf("%s", name->value);
-		}
-		printf("\n");
-	}*/
 	CheckNegativeWeightCycle(dist, names); 
 	CheckPath(parent, src, dst);
 	GetPath(parent, src, dst);
