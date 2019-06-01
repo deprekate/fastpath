@@ -49,8 +49,7 @@ const char * remove_decimals(const char *str){
 }
 
 const char * expand_scinote(const char *str){
-        char *output; 
-	char *ptr;
+        char *output, *ptr;
         size_t int_size, exp_size, size;
         const char *intptr, *expptr;
         int i, c, offset;
@@ -243,7 +242,7 @@ void print_usage() {
 
 
 int main(int argc, char *argv[]) {
-	mpz_init_set_str(INFINITE, expand_scinote("1E400"), 10);
+	mpz_init_set_str(INFINITE, expand_scinote("1E1000"), 10);
 	char *source = "", *target = "";
 	int opt= 0;
 	static struct option long_options[] = {
