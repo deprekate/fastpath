@@ -49,7 +49,8 @@ const char * remove_decimals(const char *str){
 }
 
 const char * expand_scinote(const char *str){
-        char *output, *ptr;
+        char *output; 
+	char *ptr;
         size_t int_size, exp_size, size;
         const char *intptr, *expptr;
         int i, c, offset;
@@ -62,8 +63,9 @@ const char * expand_scinote(const char *str){
                 //printf("c: %c\n", c);
                 if(c == 'e' || c == 'E'){
 			if(str[i+1] == '-'){
-                                output = malloc(2);
+                                output = (char *) malloc(2);
                                 output[0] = '0';
+                                output[1] = '\0';
                                 return output;
                         }
                         expptr = str + i + 1;
@@ -78,6 +80,8 @@ const char * expand_scinote(const char *str){
         }
         size = int_size + strtol(expptr, &ptr, 10);
         output = malloc(size + 1);
+	output[size] = '\0';
+
         for(i = 0; i < size; i++){
                 output[i] = '0';
         }
@@ -144,16 +148,15 @@ void BellmanFord(int V, mpz_t *dist, int *parent){
 	struct my_edge *s;
 	mpz_t temp;
 	mpz_init(temp);
-	for (i = 1; i < V; i++){
+	for (i = 1; i < V-1; i++){
 		flag = 1;
 		for(s=edges; s != NULL; s=s->hh.next) {
 			int u = s->src;
 			int v = s->dst;
-			mpz_t weight;
-			mpz_init_set(weight, s->weight);
-			mpz_add(temp, dist[u], weight);
-	
-			//mpz_out_str(stdout,10,weight);
+			
+			mpz_add(temp, dist[u], s->weight);
+
+			//mpz_out_str(stdout,10,dist[u]);
 			if(mpz_cmp(dist[v],temp)>0){
 				mpz_set(dist[v], temp);
 				parent[v] = u;
@@ -174,12 +177,10 @@ void CheckNegativeWeightCycle(mpz_t *dist, struct my_name *names){
 	for(s=edges; s != NULL; s=s->hh.next) {
 		int u = s->src;
 		int v = s->dst;
-		mpz_t weight;
-		mpz_init_set(weight, s->weight);
-		mpz_add(temp, dist[u], weight);
+		mpz_add(temp, dist[u], s->weight);
 		if(mpz_cmp(dist[u],INFINITE)!=0 && mpz_cmp(dist[v],temp)>0){
 			printf("ERROR: Graph contains negative weight cycle\n");
-			printf("%i - %i\n", u, v);
+			printf("%i -> %i\n", u, v);
 			HASH_FIND_INT(names, &u, name);
 			printf("%s\n", name->value);
 			HASH_FIND_INT(names, &v, name);
@@ -191,16 +192,13 @@ void CheckNegativeWeightCycle(mpz_t *dist, struct my_name *names){
 	mpz_clear(temp);
 }
 void CheckPath(int *parent, int src, int dst){
-	struct my_name *name;
 	int child = dst;
 	while(child >= 0){
-		HASH_FIND_INT(names, &child, name);
 		if(child == src){
 			return;
 		}
 		child = parent[child];
 	}
-	HASH_FIND_INT(names, &src, name);
 	printf("ERROR: No path to target\n");
         exit(EXIT_FAILURE);
 }
@@ -219,6 +217,24 @@ void GetPath(int *parent, int src, int dst){
 		printf("%s\n", name->value);
 	}
 }
+void PrintEdges(){
+	struct my_name *name;
+	struct my_edge *s;
+	for(s=edges; s != NULL; s=s->hh.next) {
+		int u = s->src;
+		int v = s->dst;
+		printf("%i -> %i\t\t", u,v);
+		HASH_FIND_INT(names, &u, name);
+		printf("%s -> ", name->value);
+		HASH_FIND_INT(names, &v, name);
+		printf("%s\t", name->value);
+		
+		mpz_out_str(stdout,10,s->weight);
+		printf("\n");
+	}
+	return;
+}
+
 void print_usage() {
     printf("Usage: fastpathz --source START_NODE --target END_NODE < NODES_FILE\n\n");
     printf("The NODE_file is a three column list, where the first column is the source node,\n");
@@ -227,7 +243,7 @@ void print_usage() {
 
 
 int main(int argc, char *argv[]) {
-	mpz_init_set_str(INFINITE, "1", 10);
+	mpz_init_set_str(INFINITE, expand_scinote("1E400"), 10);
 	char *source = "", *target = "";
 	int opt= 0;
 	static struct option long_options[] = {
@@ -315,7 +331,6 @@ int main(int argc, char *argv[]) {
 		mpz_clear(weight);
 		e++;
 	}
-	mpz_set_str(INFINITE, expand_scinote("1E1000"), 10);
 	
 /*-----------------------------------------------------------------------------------------------*/
 /* Run path finding algorithm                                                                    */
@@ -337,7 +352,7 @@ int main(int argc, char *argv[]) {
 	int V = HASH_COUNT(nodes);
 	int parent[V];
 	mpz_t dist[V];
-	
+
 	InitializeGraph(V, dist, parent, src);
 	BellmanFord(V, dist, parent);
 	CheckNegativeWeightCycle(dist, names); 
