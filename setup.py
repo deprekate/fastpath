@@ -6,7 +6,7 @@ os.environ["CC"] = "gcc"
 compile_args = [""]
 link_args    = [""]
 
-repeatfinder_module = Extension('fastpath',
+fastpath_module = Extension('fastpath',
                     language='gcc',
                     extra_compile_args=compile_args,
                     extra_link_args=link_args,
