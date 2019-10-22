@@ -16,7 +16,7 @@ fastpath_module = Extension('fastpath',
                              os.path.join(os.getcwd(), 'include'),
                     ],
                     library_dirs = [os.getcwd(),],
-                    sources = ['src/fastpath.c'])
+                    sources = ['src/fastpath.cpython'])
 
 with open("README.md", "r") as fh:
     long_desc = fh.read()
