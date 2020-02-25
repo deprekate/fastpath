@@ -1,7 +1,12 @@
 import fastpath as fp
 
-f = open("input", "r")
+fp.add_edge('one\ttwo\tasd')
+
+exit()
+
+f = open("nodes.txt", "r")
 for line in f:
 	ret = fp.add_edge(line)
 
-print(fp.get_path(source="a", target="e"))
+for edge in fp.get_path(source="Node('source','source',0,0)", target="Node('target','target',0,48837)"):
+	print(edge)

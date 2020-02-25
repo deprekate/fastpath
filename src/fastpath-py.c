@@ -19,6 +19,7 @@
 
 
 */
+
 #include <Python.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -102,7 +103,7 @@ void CheckNegativeWeightCycle(long double *dist){
 		int v = s->dst;
 		long double weight = s->weight;
 		if (dist[u] != INFINITE && dist[u] + weight < dist[v]){
-			printf("ERROR: Graph contains negative weight cycle\n");
+			PyErr_SetString(PyExc_ValueError, "Graph contains negative weight cycle");
         		exit(EXIT_FAILURE);
 		}
 			
@@ -116,30 +117,23 @@ void CheckPath(int *parent, int src, int dst){
 		}
 		child = parent[child];
 	}
-	printf("ERROR: No path to target\n");
+	PyErr_SetString(PyExc_TypeError, "No path to target\n");
         exit(EXIT_FAILURE);
 }
 void GetPath(int *parent, int src, int dst, PyObject* pl){
 	struct my_name *name;
 	HASH_FIND_INT(names, &dst, name);
 	if(name == NULL){
-                printf("ERROR: Node name for %i not found\n", dst);
+		PyErr_SetString(PyExc_ValueError, "Node name not found");
                 exit(EXIT_FAILURE);
 	}
 	if(dst == src){
-		//printf("%s\n", name->value);
 		PyList_Append(pl, Py_BuildValue("s", name->value));
 		return;
 	}else{
 		GetPath(parent, src, parent[dst], pl);
-		//printf("%s\n", name->value);
 		PyList_Append(pl, Py_BuildValue("s", name->value));
 	}
-}
-void print_usage() {
-    printf("Usage: fastpath --source START_NODE --target END_NODE < NODES_FILE\n\n");
-    printf("The NODE_file is a three column list, where the first column is the source node,\n");
-    printf("the second column is the destination node, and the third column is the weight.\n");
 }
 
 int add_node(char *node_name) {
@@ -147,6 +141,9 @@ int add_node(char *node_name) {
 	struct my_name *name;
 	int src;
 
+	if(!node_name){
+		return -1;
+	}
 	HASH_FIND_STR( nodes, node_name, node);
 	if(node == NULL){
 		node = (struct my_node*)malloc(sizeof(struct my_node));
@@ -164,7 +161,6 @@ int add_node(char *node_name) {
 	}
 
 	return src;
-
 }
 
 void _add_edge(int edge_id, int src, int dst, long double weight) {
@@ -199,9 +195,16 @@ static PyObject* add_edge (PyObject* self, PyObject* args){
 	dst = add_node(token);
 	// weight
 	token = strtok(NULL, "\t");
-	weight = strtold(token, &err);
-	_add_edge(e, src, dst, weight);
-	e++;
+	//weight = strtold(token, &err);
+	printf("tok: %s \n", token);
+	if( src>=0 && dst>=0 && token){
+	       	weight = strtold(token, &err);
+		_add_edge(e, src, dst, weight);
+		e++;
+	}else{
+		PyErr_SetString(PyExc_ValueError, "Invalid edge");
+		return NULL;
+	}
 
 	return PyUnicode_FromString(edge_string);
 }
@@ -218,50 +221,19 @@ static PyObject* get_path (PyObject* self, PyObject* args, PyObject *kwargs){
 		return NULL;
 	}
 
-	/*
-	int opt = 0;
-	static struct option long_options[] = {
-	  {"source",  required_argument, 0, 's'},
-	  {"target",  required_argument, 0, 't'},
-	  {0, 0, 0, 0}
-	};
-	int option_index = 0;
-	while ((opt = getopt_long(argc, argv, "s:t:", long_options, &option_index )) != -1) {
-		switch (opt) {
-			case 's' : source = optarg; 
-				break;
-			case 't' : target = optarg;
-				break;
-			default: print_usage(); 
-				exit(EXIT_FAILURE);
-		}
-	}
-	if(source[0] == '\0' || target[0] == '\0'){
-		print_usage();
-		exit(EXIT_FAILURE);
-	}
-
-	if (optind < argc){
-		while (optind < argc)
-			break;
-			//printf ("%s ", argv[optind++]);
- 	}
-	*/
-
-
 /*-----------------------------------------------------------------------------------------------*/
 /* Run path finding algorithm                                                                    */
 /*-----------------------------------------------------------------------------------------------*/
 	HASH_FIND_STR( nodes, source, node);
 	if(node == NULL){
-		printf("ERROR: Source node %s not found\n", source);
-		exit(EXIT_FAILURE);
+		PyErr_SetString(PyExc_ValueError, "Source node not found");
+		return NULL;
 	}
 	src = node->id;
 	HASH_FIND_STR( nodes, target, node);
 	if(node == NULL){
-		printf("ERROR: Target node %s not found\n", target);
-		exit(EXIT_FAILURE);
+		PyErr_SetString(PyExc_ValueError, "Target node not found");
+		return NULL;
 	}
 	dst = node->id;
 
