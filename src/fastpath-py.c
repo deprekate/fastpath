@@ -195,10 +195,7 @@ static PyObject* add_edge (PyObject* self, PyObject* args){
 	dst = add_node(token);
 	// weight
 	token = strtok(NULL, "\t");
-	//weight = strtold(token, &err);
-	printf("tok: %s \n", token);
-	if( src>=0 && dst>=0 && token){
-	       	weight = strtold(token, &err);
+	if( src>=0 && dst>=0 && token && (weight = strtold(token, &err)) ){
 		_add_edge(e, src, dst, weight);
 		e++;
 	}else{
@@ -206,7 +203,7 @@ static PyObject* add_edge (PyObject* self, PyObject* args){
 		return NULL;
 	}
 
-	return PyUnicode_FromString(edge_string);
+	Py_RETURN_NONE;
 }
 
 static PyObject* get_path (PyObject* self, PyObject* args, PyObject *kwargs){
@@ -324,5 +321,6 @@ main(int argc, char *argv[])
 	PyImport_ImportModule("fastpath");
 
 	PyMem_RawFree(program);
+
 	return 0;
 }	

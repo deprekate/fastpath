@@ -1,8 +1,5 @@
 import fastpath as fp
 
-fp.add_edge('one\ttwo\tasd')
-
-exit()
 
 f = open("nodes.txt", "r")
 for line in f:
