@@ -19,7 +19,7 @@
 
 
 */
-
+#include <Python.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -27,8 +27,14 @@
 #include <getopt.h>
 #include "uthash.h"
 
+#if PY_MAJOR >= 3
+#define PY3K
+#endif
 
 long double INFINITE = LDBL_MAX;
+
+int n = 0;
+int e = 0;
 
 struct my_edge {
 	int id;
@@ -39,16 +45,6 @@ struct my_edge {
 };
 struct my_edge *edges = NULL;
 
-void add_edge(int edge_id, int src, int dst, long double weight) {
-	struct my_edge *s;
-
-	s = (struct my_edge*)malloc(sizeof(struct my_edge));
-	s->id = edge_id;
-	s->src = src;
-	s->dst = dst;
-	s->weight = weight;
-	HASH_ADD_INT( edges, id, s );
-}
 struct my_edge *get_edge(int edge_id){
 	struct my_edge *s;
 
@@ -123,7 +119,7 @@ void CheckPath(int *parent, int src, int dst){
 	printf("ERROR: No path to target\n");
         exit(EXIT_FAILURE);
 }
-void GetPath(int *parent, int src, int dst){
+void GetPath(int *parent, int src, int dst, PyObject* pl){
 	struct my_name *name;
 	HASH_FIND_INT(names, &dst, name);
 	if(name == NULL){
@@ -131,11 +127,13 @@ void GetPath(int *parent, int src, int dst){
                 exit(EXIT_FAILURE);
 	}
 	if(dst == src){
-		printf("%s\n", name->value);
+		//printf("%s\n", name->value);
+		PyList_Append(pl, Py_BuildValue("s", name->value));
 		return;
 	}else{
-		GetPath(parent, src, parent[dst]);
-		printf("%s\n", name->value);
+		GetPath(parent, src, parent[dst], pl);
+		//printf("%s\n", name->value);
+		PyList_Append(pl, Py_BuildValue("s", name->value));
 	}
 }
 void print_usage() {
@@ -144,11 +142,84 @@ void print_usage() {
     printf("the second column is the destination node, and the third column is the weight.\n");
 }
 
+int add_node(char *node_name) {
+	struct my_node *node;
+	struct my_name *name;
+	int src;
 
-int main(int argc, char *argv[]) {
+	HASH_FIND_STR( nodes, node_name, node);
+	if(node == NULL){
+		node = (struct my_node*)malloc(sizeof(struct my_node));
+		name = (struct my_name*)malloc(sizeof(struct my_name));
+		strncpy(node->key, node_name, 256);
+		strncpy(name->value, node_name, 256);
+		node->id = n;
+		name->id = n;
+		HASH_ADD_STR( nodes, key, node );
+		HASH_ADD_INT( names, id, name );
+		src = n; 
+		n++;
+	}else{
+		src = node->id;
+	}
 
-	char *source = "", *target = "";
-	int opt= 0;
+	return src;
+
+}
+
+void _add_edge(int edge_id, int src, int dst, long double weight) {
+	struct my_edge *s;
+
+	s = (struct my_edge*)malloc(sizeof(struct my_edge));
+	s->id = edge_id;
+	s->src = src;
+	s->dst = dst;
+	s->weight = weight;
+	HASH_ADD_INT( edges, id, s );
+}
+
+static PyObject* add_edge (PyObject* self, PyObject* args){
+	//void add_edge(int edge_id, int src, int dst, long double weight) {
+	char *token, *err;
+	int src, dst;
+	long double weight;
+
+	char *edge_string;
+	if(!PyArg_ParseTuple(args, "s", &edge_string)) {
+		return NULL;
+	}
+
+	// parse edge string
+	edge_string[strcspn(edge_string, "\n")] = 0;
+	token = strtok(edge_string, "\t");	
+	// source
+	src = add_node(token);
+	// destination
+	token = strtok(NULL, "\t");
+	dst = add_node(token);
+	// weight
+	token = strtok(NULL, "\t");
+	weight = strtold(token, &err);
+	_add_edge(e, src, dst, weight);
+	e++;
+
+	return PyUnicode_FromString(edge_string);
+}
+
+static PyObject* get_path (PyObject* self, PyObject* args, PyObject *kwargs){
+	//(int argc, char *argv[]) {
+	char *source, *target, *infile;
+	struct my_node *node;
+	int src, dst;
+
+	static char *kwlist[] = {(char *)"source", (char *)"target", (char *)"var", NULL};
+	if (!PyArg_ParseTupleAndKeywords(args, kwargs, "ss|s", kwlist, &source, &target, &infile)) 
+	{
+		return NULL;
+	}
+
+	/*
+	int opt = 0;
 	static struct option long_options[] = {
 	  {"source",  required_argument, 0, 's'},
 	  {"target",  required_argument, 0, 't'},
@@ -169,73 +240,18 @@ int main(int argc, char *argv[]) {
 		print_usage();
 		exit(EXIT_FAILURE);
 	}
-	/* remaining command line arguments (not options). */
+
 	if (optind < argc){
 		while (optind < argc)
 			break;
 			//printf ("%s ", argv[optind++]);
  	}
+	*/
 
 
-/*-----------------------------------------------------------------------------------------------*/
-/* Read in node data from stdin                                                                  */
-/*-----------------------------------------------------------------------------------------------*/
-
-	struct my_node *node;
-	struct my_name *name;
-	char buf[256];
-	char *token, *err;
-	int src, dst;
-	long double weight;
-	int e = 0;
-	int n = 0;
-	while (fgets (buf, sizeof(buf), stdin)) {
-		buf[strcspn(buf, "\n")] = 0;
-		token = strtok(buf, "\t");	
-		
-		HASH_FIND_STR( nodes, token, node);
-		if(node == NULL){
-			node = (struct my_node*)malloc(sizeof(struct my_node));
-			name = (struct my_name*)malloc(sizeof(struct my_name));
-			strncpy(node->key, token, 256);
-			strncpy(name->value, token, 256);
-			node->id = n;
-			name->id = n;
-			HASH_ADD_STR( nodes, key, node );
-			HASH_ADD_INT( names, id, name );
-			src = n; 
-			n++;
-		}else{
-			src = node->id;
-		}
-		token = strtok(NULL, "\t");
-		HASH_FIND_STR( nodes, token, node);
-		if(node == NULL){
-			node = (struct my_node*)malloc(sizeof(struct my_node));
-			name = (struct my_name*)malloc(sizeof(struct my_name));
-			strncpy(node->key, token, 256);
-			strncpy(name->value, token, 256);
-			node->id = n;
-			name->id = n;
-			HASH_ADD_STR( nodes, key, node );
-			HASH_ADD_INT( names, id, name );
-			dst = n; 
-			n++;
-		}else{
-			dst = node->id;
-		}
-		token = strtok(NULL, "\t");
-		weight = strtold(token, &err);
-		add_edge(e, src, dst, weight);
-		e++;
-
-	}
-	
 /*-----------------------------------------------------------------------------------------------*/
 /* Run path finding algorithm                                                                    */
 /*-----------------------------------------------------------------------------------------------*/
-
-
 	HASH_FIND_STR( nodes, source, node);
 	if(node == NULL){
 		printf("ERROR: Source node %s not found\n", source);
@@ -257,7 +273,84 @@ int main(int argc, char *argv[]) {
 	BellmanFord(V, dist, parent);
 	CheckNegativeWeightCycle(dist); 
 	CheckPath(parent, src, dst);
-	GetPath(parent, src, dst);
+
+	PyObject *path_list = PyList_New(0);
+	GetPath(parent, src, dst, path_list);
    
-	return 0;
+	return path_list;
 }
+
+
+
+/*-----------------------------------------------------------------------------------------------*/
+/* Read in node data from stdin                                                                  */
+/*-----------------------------------------------------------------------------------------------*/
+/*
+void read_file(){
+	struct my_node *node;
+	struct my_name *name;
+	char buf[256];
+	char *token, *err;
+	int src, dst;
+	long double weight;
+	int e = 0;
+	int n = 0;
+	while (fgets (buf, sizeof(buf), stdin)) {
+	}
+}
+*/
+
+// Our Module's Function Definition struct
+// We require this `NULL` to signal the end of our method
+static PyMethodDef fastpath_methods[] = {
+	{ "get_path", (PyCFunction) get_path, METH_VARARGS | METH_KEYWORDS, "Finds the path in a graph" },
+	{ "add_edge", (PyCFunction) add_edge, METH_VARARGS | METH_KEYWORDS, "Adds an edge to the graph" },
+	{ NULL, NULL, 0, NULL }
+};
+//#ifdef PY3K
+// module definition structure for python3
+static struct PyModuleDef FastPath = {
+	 PyModuleDef_HEAD_INIT,
+	"FastPath",
+	"mod doc",
+	-1,
+	fastpath_methods
+};
+// module initializer for python3
+PyMODINIT_FUNC PyInit_fastpath(void)
+{
+	return PyModule_Create(&FastPath);
+}
+//#else
+// module initializer for python2
+//PyMODINIT_FUNC initfastpath() {
+//	Py_InitModule3("FastPath", fastpath_methods, "mod doc");
+//}
+//#endif
+
+int
+main(int argc, char *argv[])
+{
+	wchar_t *program = Py_DecodeLocale(argv[0], NULL);
+	if (program == NULL) {
+		fprintf(stderr, "Fatal error: cannot decode argv[0]\n");
+		exit(1);
+	}
+
+	/* Add a built-in module, before Py_Initialize */
+	PyImport_AppendInittab("fastpath", PyInit_fastpath);
+
+	/* Pass argv[0] to the Python interpreter */
+	Py_SetProgramName(program);
+
+	/* Initialize the Python interpreter.  Required. */
+	Py_Initialize();
+
+	/* Optionally import the module; alternatively,
+           import can be deferred until the embedded script
+           imports it. */
+	PyImport_ImportModule("fastpath");
+
+	PyMem_RawFree(program);
+	return 0;
+}	

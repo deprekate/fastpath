@@ -16,7 +16,7 @@ fastpath_module = Extension('fastpath',
                              os.path.join(os.getcwd(), 'include'),
                     ],
                     library_dirs = [os.getcwd(),],
-                    sources = ['src/fastpath.cpython'])
+                    sources = ['src/fastpath-py.c'])
 
 with open("README.md", "r") as fh:
     long_desc = fh.read()
@@ -27,13 +27,13 @@ setup (
     version = '0.1',
     author = "Katelyn McNair",
     author_email = "deprekate@gmail.com",
-    description = 'A package for finding the best path throgh a network graph',
+    description = 'A package for finding the best path through a network graph',
     long_description = long_desc,
     long_description_content_type="text/markdown",
     url =  "https://github.com/deprekate/fastpath",
     classifiers=[
         "Programming Language :: Python :: 3",
-        "License :: OSI Approved :: GNU General Public License",
+	"License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
         "Operating System :: OS Independent",
     ],
     python_requires='>3.5.2',
