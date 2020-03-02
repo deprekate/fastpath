@@ -3,13 +3,13 @@ import os
 from setuptools import setup, Extension
 
 os.environ["CC"] = "gcc"
-compile_args = [""]
-link_args    = [""]
+#compile_args = ["-v"]
+#link_args    = [""]
 
 fastpath_module = Extension('fastpath',
                     language='gcc',
-                    extra_compile_args=compile_args,
-                    extra_link_args=link_args,
+                    #extra_compile_args=compile_args,
+                    #extra_link_args=link_args,
                     include_dirs=[
                              '.',
                              '...',
@@ -24,7 +24,7 @@ with open("README.md", "r") as fh:
 
 setup (
     name = 'fastpath',
-    version = '0.3',
+    version = '0.4',
     author = "Katelyn McNair",
     author_email = "deprekate@gmail.com",
     description = 'A package for finding the best path through a network graph',
