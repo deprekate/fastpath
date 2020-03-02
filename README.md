@@ -19,7 +19,7 @@ Fastpath Example
 
 Run on included sample data:
 ```sh
-fastpath --source a --target e < input 
+fastpath --source a --target e < edges.txt 
 ```
 Output is the path of nodes, and should look like
 ```sh
@@ -41,3 +41,33 @@ c ─────▶ d ─────▶ e
 
 * Strings can be used for the nodes, and the weights can be positive or negative long double 
   numbers. The weights can even be in the form of scientific shorthand (1.6E+9).
+
+
+Python Example
+--------------
+
+FastPath is now available as a pypi.org package, and is installable by simply using pip
+```sh
+pip install fastpath 
+```
+
+To use in your python code, first import the module, write edges to the graph, and then provide a beginning node (source) and an end node (target)
+```sh
+import fastpath as fp
+
+f = open("edges.txt", "r")
+for line in f:
+        ret = fp.add_edge(line)
+
+for edge in fp.get_path(source="a", target="e"):
+        print(edge)
+```
+
+Output is the path of nodes, and should look like
+```sh
+$ python example.py 
+a
+c
+d
+e
+``

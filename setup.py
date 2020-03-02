@@ -24,7 +24,7 @@ with open("README.md", "r") as fh:
 
 setup (
     name = 'fastpath',
-    version = '0.1',
+    version = '0.3',
     author = "Katelyn McNair",
     author_email = "deprekate@gmail.com",
     description = 'A package for finding the best path through a network graph',
