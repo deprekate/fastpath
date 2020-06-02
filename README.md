@@ -46,7 +46,9 @@ c ─────▶ d ─────▶ e
 Python Example
 --------------
 
-FastPath is now available as a pypi.org package, and is installable by simply using pip
+FastPath is now also available as a PIP package available at [pypi.org](https://pypi.org/project/fastpath/)
+
+It is installable by simply using pip
 ```sh
 pip install fastpath 
 ```
