@@ -198,7 +198,7 @@ void _empty() {
 	e = 0;
 
 }
-static PyObject* empty (){
+static PyObject* empty_graph (){
 	_empty();
 	Py_RETURN_NONE;
 }
@@ -301,9 +301,9 @@ void read_file(){
 // Our Module's Function Definition struct
 // We require this `NULL` to signal the end of our method
 static PyMethodDef fastpath_methods[] = {
-	{ "get_path", (PyCFunction) get_path, METH_VARARGS | METH_KEYWORDS, "Finds the path in a graph" },
-	{ "add_edge", (PyCFunction) add_edge, METH_VARARGS | METH_KEYWORDS, "Adds an edge to the graph" },
-	{ "empty",    (PyCFunction)    empty, METH_VARARGS | METH_KEYWORDS, "Empties out the graph" },
+	{ "get_path",    (PyCFunction)    get_path, METH_VARARGS | METH_KEYWORDS, "Finds the path in a graph" },
+	{ "add_edge",    (PyCFunction)    add_edge, METH_VARARGS | METH_KEYWORDS, "Adds an edge to the graph" },
+	{ "empty_graph", (PyCFunction) empty_graph, METH_VARARGS | METH_KEYWORDS, "Empties out the graph" },
 	{ NULL, NULL, 0, NULL }
 };
 //#ifdef PY3K
