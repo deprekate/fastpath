@@ -21,10 +21,14 @@ fastpath_module = Extension('fastpath',
 with open("README.md", "r") as fh:
     long_desc = fh.read()
 
+def get_version():
+    with open("VERSION", 'r') as f:
+        v = f.readline().strip()
+        return v
 
 setup (
     name = 'fastpath',
-    version = '0.5',
+    version = get_version(),
     author = "Katelyn McNair",
     author_email = "deprekate@gmail.com",
     description = 'A package for finding the best path through a network graph',

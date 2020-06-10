@@ -134,6 +134,28 @@ struct my_name {
 };
 struct my_name *names = NULL;
 
+void empty() {
+	struct my_edge *current_edge, *tmp1;
+	struct my_node *current_node, *tmp2;
+	struct my_name *current_name, *tmp3;
+
+	HASH_ITER(hh, edges, current_edge, tmp1) {
+		HASH_DEL(edges, current_edge);  /* delete; users advances to next */
+		free(current_edge);             /* optional- if you want to free  */
+	}
+
+	HASH_ITER(hh, nodes, current_node, tmp2) {
+		HASH_DEL(nodes, current_node);  /* delete; users advances to next */
+		free(current_node);             /* optional- if you want to free  */
+	}
+
+	HASH_ITER(hh, names, current_name, tmp3) {
+		HASH_DEL(names, current_name);  /* delete; users advances to next */
+		free(current_name);             /* optional- if you want to free  */
+	}
+
+}
+
 void InitializeGraph(int V, mpz_t *dist, int *parent, int src){
 	int i;
 	for (i = 0; i < V; i++){
