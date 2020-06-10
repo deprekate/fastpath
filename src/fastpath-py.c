@@ -194,6 +194,8 @@ void _empty() {
 		HASH_DEL(names, current_name);  /* delete; users advances to next */
 		free(current_name);             /* optional- if you want to free  */
 	}
+	n = 0;
+	e = 0;
 
 }
 static PyObject* empty (){

@@ -1,5 +1,5 @@
 import fastpath as fp
-import faulthandler
+#import faulthandler
 
 
 f = open("edges.txt", "r")
@@ -18,7 +18,7 @@ fp.empty()
 
 f = open("edges.txt", "r")
 
-faulthandler.enable()
+#faulthandler.enable()
 
 # write edges to the graph
 for line in f:
