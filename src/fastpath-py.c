@@ -174,6 +174,35 @@ void _add_edge(int edge_id, int src, int dst, long double weight) {
 	HASH_ADD_INT( edges, id, s );
 }
 
+
+void _empty() {
+	struct my_edge *current_edge, *tmp1;
+	struct my_node *current_node, *tmp2;
+	struct my_name *current_name, *tmp3;
+
+	HASH_ITER(hh, edges, current_edge, tmp1) {
+		HASH_DEL(edges, current_edge);  /* delete; users advances to next */
+		free(current_edge);             /* optional- if you want to free  */
+	}
+
+	HASH_ITER(hh, nodes, current_node, tmp2) {
+		HASH_DEL(nodes, current_node);  /* delete; users advances to next */
+		free(current_node);             /* optional- if you want to free  */
+	}
+
+	HASH_ITER(hh, names, current_name, tmp3) {
+		HASH_DEL(names, current_name);  /* delete; users advances to next */
+		free(current_name);             /* optional- if you want to free  */
+	}
+	n = 0;
+	e = 0;
+
+}
+static PyObject* empty (){
+	_empty();
+	Py_RETURN_NONE;
+}
+
 static PyObject* add_edge (PyObject* self, PyObject* args){
 	//void add_edge(int edge_id, int src, int dst, long double weight) {
 	char *token, *err;
@@ -274,6 +303,7 @@ void read_file(){
 static PyMethodDef fastpath_methods[] = {
 	{ "get_path", (PyCFunction) get_path, METH_VARARGS | METH_KEYWORDS, "Finds the path in a graph" },
 	{ "add_edge", (PyCFunction) add_edge, METH_VARARGS | METH_KEYWORDS, "Adds an edge to the graph" },
+	{ "empty",    (PyCFunction)    empty, METH_VARARGS | METH_KEYWORDS, "Empties out the graph" },
 	{ NULL, NULL, 0, NULL }
 };
 //#ifdef PY3K
