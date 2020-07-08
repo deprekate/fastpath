@@ -13,7 +13,7 @@ for edge in fp.get_path(source="a", target="e"):
 
 f.close()
 
-fp.empty()
+fp.empty_graph()
 
 f = open("edges.txt", "r")
 
