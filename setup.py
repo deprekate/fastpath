@@ -3,12 +3,12 @@ import os
 from setuptools import setup, Extension
 
 os.environ["CC"] = "gcc"
-#compile_args = ["-v"]
+compile_args = ["-Wno-unused-variable"]
 #link_args    = [""]
 
-fastpath_module = Extension('fastpath',
+fastpath_module = Extension('fastpathz',
                     language='gcc',
-                    #extra_compile_args=compile_args,
+                    extra_compile_args=compile_args,
                     #extra_link_args=link_args,
                     include_dirs=[
                              '.',
@@ -16,7 +16,7 @@ fastpath_module = Extension('fastpath',
                              os.path.join(os.getcwd(), 'include'),
                     ],
                     library_dirs = [os.getcwd(),],
-                    sources = ['src/fastpath-py.c'])
+                    sources = ['src/fastpathz.py.c', 'src/mini-gmp.c'])
 
 with open("README.md", "r") as fh:
     long_desc = fh.read()
@@ -27,7 +27,7 @@ def get_version():
         return v
 
 setup (
-    name = 'fastpath',
+    name = 'fastpathz',
     version = get_version(),
     author = "Katelyn McNair",
     author_email = "deprekate@gmail.com",

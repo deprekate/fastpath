@@ -1,4 +1,4 @@
-import fastpath as fp
+import fastpathz as fp
 
 
 f = open("edges.txt", "r")
