@@ -19,10 +19,11 @@ Fastpath Example
 
 Run on included sample data:
 ```sh
-fastpath --source a --target e < edges.txt 
+fastpath --source z --target e < edges.txt 
 ```
 Output is the path of nodes, and should look like
 ```sh
+z
 a
 c
 d
@@ -32,11 +33,11 @@ e
 The structure of the graph looks like:
 
 ```sh
-a ─────▶ b ◀───── f
-│        │
-│        │
-▼        ▼
-c ─────▶ d ─────▶ e
+z ─────▶ a ─────▶ b ◀───── f
+         │        │
+         │        │
+         ▼        ▼
+         c ─────▶ d ─────▶ e
 ```
 
 * Strings can be used for the nodes, and the weights can be positive or negative long double 

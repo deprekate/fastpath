@@ -96,7 +96,7 @@ void BellmanFord(int V, long double *dist, int *parent){
                 }
 	}
 }
-void CheckNegativeWeightCycle(long double *dist){
+int CheckNegativeWeightCycle(long double *dist){
 	struct my_edge *s;
 	for(s=edges; s != NULL; s=s->hh.next) {
 		int u = s->src;
@@ -104,21 +104,22 @@ void CheckNegativeWeightCycle(long double *dist){
 		long double weight = s->weight;
 		if (dist[u] != INFINITE && dist[u] + weight < dist[v]){
 			PyErr_SetString(PyExc_ValueError, "Graph contains negative weight cycle");
-        		exit(EXIT_FAILURE);
+        	return 0; //	exit(EXIT_FAILURE);
 		}
 			
 	}
+	return 1;
 }
-void CheckPath(int *parent, int src, int dst){
+int CheckPath(int *parent, int src, int dst){
 	int child = dst;
 	while(child >= 0){
 		if(child == src){
-			return;
+			return 1;
 		}
 		child = parent[child];
 	}
 	PyErr_SetString(PyExc_TypeError, "No path to target\n");
-        exit(EXIT_FAILURE);
+    return 0; //   exit(EXIT_FAILURE);
 }
 void GetPath(int *parent, int src, int dst, PyObject* pl){
 	struct my_name *name;
@@ -229,7 +230,7 @@ static PyObject* add_edge (PyObject* self, PyObject* args){
 	dst = add_node(token);
 	// weight
 	token = strtok(NULL, "\t");
-	if( src>=0 && dst>=0 && token && (weight = strtold(token, &err)) ){
+	if( src>=0 && dst>=0 && token && ((weight = strtold(token, &err)) || (*err=='\0')) ){
 		_add_edge(e, src, dst, weight);
 		e++;
 	}else{
@@ -274,8 +275,9 @@ static PyObject* get_path (PyObject* self, PyObject* args, PyObject *kwargs){
 
 	InitializeGraph(V, dist, parent, src);
 	BellmanFord(V, dist, parent);
-	CheckNegativeWeightCycle(dist); 
-	CheckPath(parent, src, dst);
+	if(!CheckNegativeWeightCycle(dist) || !CheckPath(parent, src, dst)){
+		return NULL;
+	}
 
 	PyObject *path_list = PyList_New(0);
 	GetPath(parent, src, dst, path_list);
