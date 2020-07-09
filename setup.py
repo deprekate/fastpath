@@ -3,12 +3,12 @@ import os
 from setuptools import setup, Extension
 
 os.environ["CC"] = "gcc"
-#compile_args = ["-v"]
+compile_args = ["-Wno-unused-variable"]
 #link_args    = [""]
 
 fastpath_module = Extension('fastpath',
                     language='gcc',
-                    #extra_compile_args=compile_args,
+                    extra_compile_args=compile_args,
                     #extra_link_args=link_args,
                     include_dirs=[
                              '.',
