@@ -1,0 +1,3 @@
+include *.md LICENSE VERSION
+recursive-include include *.h LICENSE
+recursive-include src *.c

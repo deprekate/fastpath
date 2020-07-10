@@ -225,9 +225,14 @@ int main(int argc, char *argv[]) {
 			dst = node->id;
 		}
 		token = strtok(NULL, "\t");
-		weight = strtold(token, &err);
-		add_edge(e, src, dst, weight);
-		e++;
+		if( src>=0 && dst>=0 && token && ((weight = strtold(token, &err)) || (*err=='\0')) ){
+			weight = strtold(token, &err);
+			add_edge(e, src, dst, weight);
+			e++;
+		}else{
+			printf("ERROR: Invalid edge\n");
+			exit(EXIT_FAILURE);
+		}
 
 	}
 	

@@ -14,17 +14,35 @@ cd fastpath; make
 The only library dependency for fastpath is uthash (which is included).
 The fastpathz has the extra dependency of mini-gmp (which is included).
 
+There are two flavors of `fastpath`.  The first is the default `fastpath`, which will work
+for 99% of needed cases.  It's limitation is that it uses the C-type long double for edge
+weights, which can cause rounding errors if you have extremely large/small numbers for edge
+weights (ie -1E50 or 1E50).
+This is because during the path relaxation step of the Bellmanford code, C cannot distinguish
+a difference between 1E50 and 1E50 + 1
+If your numbers are extremely large/small, then you can use the `fastpathz` version, which
+uses infinite-precision integers as edge weights. The downside of using `fastpathz` is that
+decimal places get dropped, so the C code does not distinguish between 1 and 1.1.  This 
+limitation can partially be overcome by just multiplying all your weights by an arbitrary
+number.
+
+
+
 Fastpath Example
 --------------
 
-Run on included sample data:
+Run either flavor on the included sample data:
 ```sh
-fastpath --source a --target e < edges.txt 
+fastpath --source z --target e < edges.txt 
 ```
-Output is the path of nodes, and should look like
 ```sh
+fastpathz --source z --target e < edges.txt 
+```
+The output of either command is the path of nodes, and should look like
+```sh
+z
 a
-c
+b
 d
 e
 ```
@@ -32,11 +50,11 @@ e
 The structure of the graph looks like:
 
 ```sh
-a ─────▶ b ◀───── f
-│        │
-│        │
-▼        ▼
-c ─────▶ d ─────▶ e
+z ─────▶ a ─────▶ b ◀───── f
+         │        │
+         │        │
+         ▼        ▼
+         c ─────▶ d ─────▶ e
 ```
 
 * Strings can be used for the nodes, and the weights can be positive or negative long double 
