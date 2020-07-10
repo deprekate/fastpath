@@ -1,0 +1,4 @@
+include *.md LICENSE VERSION
+include tests/*.fasta
+recursive-include include *.h LICENSE
+recursive-include src *.c
