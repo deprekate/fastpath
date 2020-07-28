@@ -33,21 +33,21 @@ def get_version():
 		v = f.readline().strip()
 		return v
 
-for package_name in ['fastpath', 'fastpathz']:
-	setup (
-		name = package_name,
-		version = get_version(),
-		author = "Katelyn McNair",
-		author_email = "deprekate@gmail.com",
-		description = 'A package for finding the best path through a network graph',
-		long_description = long_desc,
-		long_description_content_type="text/markdown",
-		url =  "https://github.com/deprekate/fastpath",
-		classifiers=[
-			"Programming Language :: Python :: 3",
-			"License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
-			"Operating System :: OS Independent",
-		],
-		python_requires='>3.5.2',
-		ext_modules = [extension(package_name)]
+#for package_name in ['fastpath', 'fastpathz']:
+setup (
+	name = 'fastpath',
+	version = get_version(),
+	author = "Katelyn McNair",
+	author_email = "deprekate@gmail.com",
+	description = 'A package for finding the best path through a network graph',
+	long_description = long_desc,
+	long_description_content_type="text/markdown",
+	url =  "https://github.com/deprekate/fastpath",
+	classifiers=[
+		"Programming Language :: Python :: 3",
+		"License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+		"Operating System :: OS Independent",
+	],
+	python_requires='>3.5.2',
+	ext_modules = [extension('fastpath'), extension('fastpathz')]
 )

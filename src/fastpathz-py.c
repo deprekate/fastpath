@@ -166,6 +166,7 @@ void BellmanFord(int V, mpz_t *dist, int *parent){
 }
 int CheckNegativeWeightCycle(mpz_t *dist){
 	struct my_edge *s;
+	struct my_name *name;
 	mpz_t temp;
 	mpz_init(temp);
 
@@ -174,6 +175,19 @@ int CheckNegativeWeightCycle(mpz_t *dist){
 		int v = s->dst;
 		mpz_add(temp, dist[u], s->weight);
 		if(mpz_cmp(dist[u],INFINITE)!=0 && mpz_cmp(dist[v],temp)>0){
+			printf("%i - %i\n", u, v);
+			HASH_FIND_INT(names, &u, name);
+			printf("%s - ", name->value);
+			HASH_FIND_INT(names, &v, name);
+			printf("%s\n", name->value);
+			mpz_out_str(stdout,10,dist[u]);
+			printf("\n");
+			mpz_out_str(stdout,10,dist[v]);
+			printf("\n");
+			mpz_out_str(stdout,10,temp);
+			printf("\n");
+			printf("\n");
+			fflush(stdout);
 			PyErr_SetString(PyExc_ValueError, "Graph contains negative weight cycle");
 			return 0; //	exit(EXIT_FAILURE);
 		}
