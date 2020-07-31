@@ -295,30 +295,6 @@ static PyObject* empty_graph (){
 	Py_RETURN_NONE;
 }
 
-static PyObject* get_edges (PyObject* self){
-	struct my_edge *s;
-	struct my_name *name;
-	char *w;
-	const Py_ssize_t tuple_length = 3;
-	PyObject *edges_list = PyList_New(0);
-
-	for(s=edges; s != NULL; s=s->hh.next) {
-		PyObject *the_tuple = PyTuple_New(tuple_length);
-		// src
-		HASH_FIND_INT(names, &s->src, name);
-		PyTuple_SET_ITEM(the_tuple, 0, PyUnicode_FromString(name->value));
-		// dst
-		HASH_FIND_INT(names, &s->dst, name);
-		PyTuple_SET_ITEM(the_tuple, 1, PyUnicode_FromString(name->value));
-		// weight
-		w = mpz_get_str(NULL, 10, s->weight);
-		PyTuple_SET_ITEM(the_tuple, 2, PyUnicode_FromString(w));
-		PyList_Append(edges_list, the_tuple);
-	}
-
-	return edges_list;
-}
-
 static PyObject* add_edge (PyObject* self, PyObject* args){
 	//void add_edge(int edge_id, int src, int dst, long double weight) {
 	char *token;
@@ -404,24 +380,65 @@ static PyObject* get_path (PyObject* self, PyObject* args, PyObject *kwargs){
 }
 
 
+typedef struct {
+    PyObject_HEAD
+	struct my_edge *s;
+} IterObject;
 
-/*-----------------------------------------------------------------------------------------------*/
-/* Read in node data from stdin                                                                  */
-/*-----------------------------------------------------------------------------------------------*/
-/*
-void read_file(){
-	struct my_node *node;
-	struct my_name *name;
-	char buf[256];
-	char *token, *err;
-	int src, dst;
-	long double weight;
-	int e = 0;
-	int n = 0;
-	while (fgets (buf, sizeof(buf), stdin)) {
+PyObject* Iterable_iter(PyObject *self)
+{
+	Py_INCREF(self);
+	IterObject *p = (IterObject *)self;
+	p->s = edges;
+	return self;
+}
+PyObject* Iterable_iternext(PyObject *self)
+{
+	struct my_name *name1;
+	struct my_name *name2;
+	char *w;
+
+	IterObject *p = (IterObject *)self;
+	if(p->s != NULL){
+		HASH_FIND_INT(names, &p->s->src, name1);
+		HASH_FIND_INT(names, &p->s->dst, name2);
+		w = mpz_get_str(NULL,10,p->s->weight);
+		p->s = p->s->hh.next;
+		return Py_BuildValue("(sss)", name1->value, name2->value, w);
+	}else{
+		PyErr_SetNone(PyExc_StopIteration);
+		return NULL;
 	}
 }
-*/
+static void Iter_dealloc(IterObject *self){ PyObject_Del(self); }
+
+static PyTypeObject IterableType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "Iter",
+    .tp_doc = "Custom objects",
+    .tp_basicsize = sizeof(IterObject),
+    .tp_itemsize = 0,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_dealloc = (destructor) Iter_dealloc,
+	.tp_iter      = Iterable_iter,
+	.tp_iternext  = Iterable_iternext
+};
+static PyObject* get_edges(PyObject *self, PyObject *Py_UNUSED(ignored)) {
+	IterObject *p;
+
+	p = PyObject_New(IterObject, &IterableType);
+	if (!p) return NULL;
+
+	if (!PyObject_Init((PyObject *)p, &IterableType)) {
+    	Py_DECREF(p);
+    	return NULL;
+ 	}
+	return (PyObject *) p;
+}
+
+
+
+
 
 // Our Module's Function Definition struct
 // We require this `NULL` to signal the end of our method
