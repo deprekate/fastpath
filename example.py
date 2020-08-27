@@ -15,7 +15,7 @@ for edge in f:
 
 # find the best path from a source node to a target node
 print("\nfastpath", "fastpathz", sep="\t")
-for node in zip(fp.get_path(source="z", target="e"),fz.get_path(source="z", target="e")):
+for node in zip(fp.get_path(source="A", target="Z"),fz.get_path(source="A", target="Z")):
 	print(node[0], node[1], sep="\t\t")
 
 
@@ -30,7 +30,7 @@ for edge in f:
 	ret = fz.add_edge(multiply(edge))
 
 print("\nfastpathz (multipied)")
-for node in fz.get_path(source="z", target="e"):
+for node in fz.get_path(source="A", target="Z"):
 	print(node, sep="\t\t")
 print()
 
