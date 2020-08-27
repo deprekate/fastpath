@@ -108,12 +108,14 @@ struct my_edge {
 };
 struct my_edge *edges = NULL;
 
+/*
 struct my_edge *get_edge(int edge_id){
 	struct my_edge *s;
 
 	HASH_FIND_INT( edges, &edge_id, s );
 	return s;
 }
+*/
 
 struct my_node {
 	char key[256];
@@ -296,35 +298,33 @@ static PyObject* empty_graph (){
 }
 
 static PyObject* add_edge (PyObject* self, PyObject* args){
-	//void add_edge(int edge_id, int src, int dst, long double weight) {
-	char *token;
+	char *source, *destination, *weight;
+	PyObject *obj;
+    //if(!PyArg_ParseTuple(args, "sss", &source, &destination, &weight)) {
+    if(!PyArg_ParseTuple(args, "O", &obj)) {
+        return NULL;
+    }
+
+    if(!PyArg_ParseTuple(obj, "sss", &source, &destination, &weight)) {
+        return NULL;
+    }
 	int src, dst;
-	mpz_t weight;
+	mpz_t wgt;
 
-	char *edge_string;
-	if(!PyArg_ParseTuple(args, "s", &edge_string)) {
-		return NULL;
-	}
-
-	// parse edge string
-	edge_string[strcspn(edge_string, "\n")] = 0;
-	token = strtok(edge_string, "\t");	
 	// source
-	src = add_node(token);
+	src = add_node(source);
 	// destination
-	token = strtok(NULL, "\t");
-	dst = add_node(token);
+	dst = add_node(destination);
 	// weight
-	token = strtok(NULL, "\t");
-	if( src>=0 && dst>=0 && token){
-		mpz_init(weight);
-		if(strstr(token, "E") != NULL) {
-			mpz_set_str(weight, expand_scinote(token), 10);
+	if( src>=0 && dst>=0 && weight){
+		mpz_init(wgt);
+		if( (strstr(weight, "E")!=NULL) || (strstr(weight, "e")!=NULL) ) {
+			mpz_set_str(wgt, expand_scinote(weight), 10);
 		}else{
-			mpz_set_str(weight, remove_decimals(token), 10);
+			mpz_set_str(wgt, remove_decimals(weight), 10);
 		}
-		_add_edge(e, src, dst, weight);
-		mpz_clear(weight);
+		_add_edge(e, src, dst, wgt);
+		mpz_clear(wgt);
 		e++;
 	}else{
 		PyErr_SetString(PyExc_ValueError, "Invalid edge");

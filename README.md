@@ -40,21 +40,21 @@ fastpathz --source z --target e < edges.txt
 ```
 The output of either command is the path of nodes, and should look like
 ```sh
-z
 a
 b
 d
 e
+z
 ```
 
 The structure of the graph looks like:
 
 ```sh
-z ─────▶ a ─────▶ b ◀───── f
+a ─────▶ b ─────▶ c ◀───── f
          │        │
          │        │
          ▼        ▼
-         c ─────▶ d ─────▶ e
+         d ─────▶ e ─────▶ z
 ```
 
 * Strings can be used for the nodes, and the weights can be positive or negative long double 
