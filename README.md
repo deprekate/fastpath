@@ -33,28 +33,28 @@ Fastpath Example
 
 Run either flavor on the included sample data:
 ```sh
-fastpath --source z --target e < edges.txt 
+fastpath --source A --target Z < edges.txt 
 ```
 ```sh
-fastpathz --source z --target e < edges.txt 
+fastpathz --source A --target Z < edges.txt 
 ```
 The output of either command is the path of nodes, and should look like
 ```sh
-z
-a
-b
-d
-e
+A
+B
+D
+E
+Z
 ```
 
 The structure of the graph looks like:
 
 ```sh
-z —————> a —————> b <————— f
+A -----> B -----> C <----- F
          |        |
          |        |
          v        v
-         c —————> d —————> e
+         D -----> E -----> Z
 ```
 
 * Strings can be used for the nodes, and the weights can be positive or negative long double 
@@ -79,15 +79,16 @@ f = open("edges.txt", "r")
 for line in f:
         ret = fp.add_edge(line)
 
-for edge in fp.get_path(source="a", target="e"):
+for edge in fp.get_path(source="A", target="Z"):
         print(edge)
 ```
 
 Output is the path of nodes, and should look like
 ```sh
 $ python example.py 
-a
-c
-d
-e
+A
+B
+D
+E
+Z
 ```
