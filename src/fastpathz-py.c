@@ -299,14 +299,34 @@ static PyObject* empty_graph (){
 
 static PyObject* add_edge (PyObject* self, PyObject* args){
 	char *source, *destination, *weight;
+	char *token, *edge_string;
 	PyObject *obj;
-    //if(!PyArg_ParseTuple(args, "sss", &source, &destination, &weight)) {
-    if(!PyArg_ParseTuple(args, "O", &obj)) {
-        return NULL;
-    }
 
-    if(!PyArg_ParseTuple(obj, "sss", &source, &destination, &weight)) {
-        return NULL;
+	if(!PyArg_ParseTuple(args, "O", &obj)){
+		return NULL;
+	}
+	if(!PyTuple_Check(obj)){
+		if(!PyArg_ParseTuple(args, "s", &edge_string)){
+			return NULL;
+		}
+		// parse edge string
+		edge_string[strcspn(edge_string, "\n")] = 0;
+		// source
+		token = strtok(edge_string, "\t");
+		source = malloc(255 * sizeof(char));
+		strcpy(source, token);
+		// destination
+		token = strtok(NULL, "\t");
+		destination = malloc(255 * sizeof(char));
+		strcpy(destination, token);
+		// weight
+		token = strtok(NULL, "\t");
+		weight = malloc(255 * sizeof(char));
+		strcpy(weight, token);
+	}else{
+  		if(!PyArg_ParseTuple(obj, "sss", &source, &destination, &weight)){
+        	return NULL;
+		}
     }
 	int src, dst;
 	mpz_t wgt;

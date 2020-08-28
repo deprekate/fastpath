@@ -1,7 +1,7 @@
-a	b	-1.1E+100
-b	c	1.2
-b	d	1.1
-c	e	2
-d	e	2
-e	z	0
-f	c	23
+A	B	-1.1E+100
+B	C	1.2
+B	D	1.1
+C	E	2
+D	E	2
+E	Z	0
+F	C	23
