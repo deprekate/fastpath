@@ -108,12 +108,14 @@ struct my_edge {
 };
 struct my_edge *edges = NULL;
 
+/*
 struct my_edge *get_edge(int edge_id){
 	struct my_edge *s;
 
 	HASH_FIND_INT( edges, &edge_id, s );
 	return s;
 }
+*/
 
 struct my_node {
 	char key[256];
@@ -166,6 +168,7 @@ void BellmanFord(int V, mpz_t *dist, int *parent){
 }
 int CheckNegativeWeightCycle(mpz_t *dist){
 	struct my_edge *s;
+	struct my_name *name;
 	mpz_t temp;
 	mpz_init(temp);
 
@@ -174,6 +177,19 @@ int CheckNegativeWeightCycle(mpz_t *dist){
 		int v = s->dst;
 		mpz_add(temp, dist[u], s->weight);
 		if(mpz_cmp(dist[u],INFINITE)!=0 && mpz_cmp(dist[v],temp)>0){
+			printf("%i - %i\n", u, v);
+			HASH_FIND_INT(names, &u, name);
+			printf("%s - ", name->value);
+			HASH_FIND_INT(names, &v, name);
+			printf("%s\n", name->value);
+			mpz_out_str(stdout,10,dist[u]);
+			printf("\n");
+			mpz_out_str(stdout,10,dist[v]);
+			printf("\n");
+			mpz_out_str(stdout,10,temp);
+			printf("\n");
+			printf("\n");
+			fflush(stdout);
 			PyErr_SetString(PyExc_ValueError, "Graph contains negative weight cycle");
 			return 0; //	exit(EXIT_FAILURE);
 		}
@@ -282,35 +298,53 @@ static PyObject* empty_graph (){
 }
 
 static PyObject* add_edge (PyObject* self, PyObject* args){
-	//void add_edge(int edge_id, int src, int dst, long double weight) {
-	char *token;
-	int src, dst;
-	mpz_t weight;
+	char *source, *destination, *weight;
+	char *token, *edge_string;
+	PyObject *obj;
 
-	char *edge_string;
-	if(!PyArg_ParseTuple(args, "s", &edge_string)) {
+	if(!PyArg_ParseTuple(args, "O", &obj)){
 		return NULL;
 	}
-
-	// parse edge string
-	edge_string[strcspn(edge_string, "\n")] = 0;
-	token = strtok(edge_string, "\t");	
-	// source
-	src = add_node(token);
-	// destination
-	token = strtok(NULL, "\t");
-	dst = add_node(token);
-	// weight
-	token = strtok(NULL, "\t");
-	if( src>=0 && dst>=0 && token){
-		mpz_init(weight);
-		if(strstr(token, "E") != NULL) {
-			mpz_set_str(weight, expand_scinote(token), 10);
-		}else{
-			mpz_set_str(weight, remove_decimals(token), 10);
+	if(!PyTuple_Check(obj)){
+		if(!PyArg_ParseTuple(args, "s", &edge_string)){
+			return NULL;
 		}
-		_add_edge(e, src, dst, weight);
-		mpz_clear(weight);
+		// parse edge string
+		edge_string[strcspn(edge_string, "\n")] = 0;
+		// source
+		token = strtok(edge_string, "\t");
+		source = malloc(255 * sizeof(char));
+		strcpy(source, token);
+		// destination
+		token = strtok(NULL, "\t");
+		destination = malloc(255 * sizeof(char));
+		strcpy(destination, token);
+		// weight
+		token = strtok(NULL, "\t");
+		weight = malloc(255 * sizeof(char));
+		strcpy(weight, token);
+	}else{
+  		if(!PyArg_ParseTuple(obj, "sss", &source, &destination, &weight)){
+        	return NULL;
+		}
+    }
+	int src, dst;
+	mpz_t wgt;
+
+	// source
+	src = add_node(source);
+	// destination
+	dst = add_node(destination);
+	// weight
+	if( src>=0 && dst>=0 && weight){
+		mpz_init(wgt);
+		if( (strstr(weight, "E")!=NULL) || (strstr(weight, "e")!=NULL) ) {
+			mpz_set_str(wgt, expand_scinote(weight), 10);
+		}else{
+			mpz_set_str(wgt, remove_decimals(weight), 10);
+		}
+		_add_edge(e, src, dst, wgt);
+		mpz_clear(wgt);
 		e++;
 	}else{
 		PyErr_SetString(PyExc_ValueError, "Invalid edge");
@@ -366,30 +400,72 @@ static PyObject* get_path (PyObject* self, PyObject* args, PyObject *kwargs){
 }
 
 
+typedef struct {
+    PyObject_HEAD
+	struct my_edge *s;
+} IterObject;
 
-/*-----------------------------------------------------------------------------------------------*/
-/* Read in node data from stdin                                                                  */
-/*-----------------------------------------------------------------------------------------------*/
-/*
-void read_file(){
-	struct my_node *node;
-	struct my_name *name;
-	char buf[256];
-	char *token, *err;
-	int src, dst;
-	long double weight;
-	int e = 0;
-	int n = 0;
-	while (fgets (buf, sizeof(buf), stdin)) {
+PyObject* Iterable_iter(PyObject *self)
+{
+	Py_INCREF(self);
+	IterObject *p = (IterObject *)self;
+	p->s = edges;
+	return self;
+}
+PyObject* Iterable_iternext(PyObject *self)
+{
+	struct my_name *name1;
+	struct my_name *name2;
+	char *w;
+
+	IterObject *p = (IterObject *)self;
+	if(p->s != NULL){
+		HASH_FIND_INT(names, &p->s->src, name1);
+		HASH_FIND_INT(names, &p->s->dst, name2);
+		w = mpz_get_str(NULL,10,p->s->weight);
+		p->s = p->s->hh.next;
+		return Py_BuildValue("(sss)", name1->value, name2->value, w);
+	}else{
+		PyErr_SetNone(PyExc_StopIteration);
+		return NULL;
 	}
 }
-*/
+static void Iter_dealloc(IterObject *self){ PyObject_Del(self); }
+
+static PyTypeObject IterableType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "Iter",
+    .tp_doc = "Custom objects",
+    .tp_basicsize = sizeof(IterObject),
+    .tp_itemsize = 0,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_dealloc = (destructor) Iter_dealloc,
+	.tp_iter      = Iterable_iter,
+	.tp_iternext  = Iterable_iternext
+};
+static PyObject* get_edges(PyObject *self, PyObject *Py_UNUSED(ignored)) {
+	IterObject *p;
+
+	p = PyObject_New(IterObject, &IterableType);
+	if (!p) return NULL;
+
+	if (!PyObject_Init((PyObject *)p, &IterableType)) {
+    	Py_DECREF(p);
+    	return NULL;
+ 	}
+	return (PyObject *) p;
+}
+
+
+
+
 
 // Our Module's Function Definition struct
 // We require this `NULL` to signal the end of our method
 static PyMethodDef fastpathz_methods[] = {
 	{ "get_path",    (PyCFunction)    get_path, METH_VARARGS | METH_KEYWORDS, "Finds the path in a graph" },
 	{ "add_edge",    (PyCFunction)    add_edge, METH_VARARGS | METH_KEYWORDS, "Adds an edge to the graph" },
+	{ "get_edges",   (PyCFunction)   get_edges, METH_VARARGS | METH_KEYWORDS, "Gets the edges in the graph" },
 	{ "empty_graph", (PyCFunction) empty_graph, METH_VARARGS | METH_KEYWORDS, "Empties out the graph" },
 	{ NULL, NULL, 0, NULL }
 };

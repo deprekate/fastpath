@@ -209,6 +209,24 @@ static PyObject* empty_graph (){
 	Py_RETURN_NONE;
 }
 
+static PyObject* get_edges (PyObject* self){
+	struct my_edge *s;
+	struct my_name *name;
+	//const Py_ssize_t tuple_length = 3;
+	PyObject *edges_list = PyList_New(0);
+
+	for(s=edges; s != NULL; s=s->hh.next) {
+		//PyObject *the_tuple = PyTuple_New(tuple_length);
+		// src
+		HASH_FIND_INT(names, &s->src, name);
+		//PyTuple_SET_ITEM(the_tuple, 0, PyUnicode_FromString(name->value));
+		//PyList_Append(edges_list, the_tuple);
+		PyList_Append(edges_list, Py_BuildValue("ssd", name->value, name->value, 3));
+	}
+
+	return edges_list;
+}
+
 static PyObject* add_edge (PyObject* self, PyObject* args){
 	//void add_edge(int edge_id, int src, int dst, long double weight) {
 	char *token, *err;
@@ -310,6 +328,7 @@ void read_file(){
 static PyMethodDef fastpath_methods[] = {
 	{ "get_path",    (PyCFunction)    get_path, METH_VARARGS | METH_KEYWORDS, "Finds the path in a graph" },
 	{ "add_edge",    (PyCFunction)    add_edge, METH_VARARGS | METH_KEYWORDS, "Adds an edge to the graph" },
+	{ "get_edges",   (PyCFunction)   get_edges, METH_VARARGS | METH_KEYWORDS, "Gets the edges in the graph" },
 	{ "empty_graph", (PyCFunction) empty_graph, METH_VARARGS | METH_KEYWORDS, "Empties out the graph" },
 	{ NULL, NULL, 0, NULL }
 };

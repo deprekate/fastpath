@@ -5,33 +5,60 @@ import fastpathz as fz
 f = open("edges.txt", "r")
 
 
+#--------------------------------------------------------------------#
 # write edges to the graph
-for edge in f:
-	ret = fp.add_edge(edge)
-
-	# the fastpath C extension alters the line string, so revert it
-	edge = edge.replace("\x00", "\t", 2).replace("\x00", "\n")
+#--------------------------------------------------------------------#
+for line in f:
+	edge = tuple(line.rstrip().split("\t"))
 	ret = fz.add_edge(edge)
+	ret = fp.add_edge(line)
 
+#--------------------------------------------------------------------#
 # find the best path from a source node to a target node
+#--------------------------------------------------------------------#
 print("\nfastpath", "fastpathz", sep="\t")
 for node in zip(fp.get_path(source="A", target="Z"),fz.get_path(source="A", target="Z")):
 	print(node[0], node[1], sep="\t\t")
 
 
-# reset everything and run multiplied fastpathz
+# reset everything
 fz.empty_graph()
 f.seek(0)
 
+#--------------------------------------------------------------------#
 # fastpathz only works on integers, so multiply to keep decimal accuracy
-multiply = lambda a: "\t".join(a.split("\t")[0:2] + [str(float(a.split("\t")[2])*100)])
+#--------------------------------------------------------------------#
+scale = lambda a : (a[0], a[1], str(float(a[2])*1000))
 
-for edge in f:
-	ret = fz.add_edge(multiply(edge))
+for line in f:
+	edge = scale(tuple(line.rstrip().split("\t")))
+	ret = fz.add_edge(edge)
 
-print("\nfastpathz (multipied)")
+
+print("\nfastpathz (scaled)")
 for node in fz.get_path(source="A", target="Z"):
 	print(node, sep="\t\t")
 print()
 
+
+# reset everything
+fz.empty_graph()
+f.seek(0)
+
+#--------------------------------------------------------------------#
+# Writing edges are tab delimited strings is still supported
+#--------------------------------------------------------------------#
+print("\nfastpath tab delimited")
+for line in f:
+    ret = fz.add_edge(line)
+
+for node in fz.get_path(source="A", target="Z"):
+    print(node)
+
 f.close()
+
+exit()
+# read edges in graph
+print("The edges written to graph")
+for edge in fz.get_edges():
+	print(edge)
