@@ -34,6 +34,7 @@ for line in f:
 	edge = scale(tuple(line.rstrip().split("\t")))
 	ret = fz.add_edge(edge)
 
+
 print("\nfastpathz (scaled)")
 for node in fz.get_path(source="A", target="Z"):
 	print(node, sep="\t\t")
