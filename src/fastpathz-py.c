@@ -25,6 +25,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <float.h>
+#include <math.h>
 #include <getopt.h>
 #include "uthash.h"
 #include "mini-gmp.h"
@@ -38,65 +39,62 @@ int e = 0;
 //long double INFINITE = LDBL_MAX;
 mpz_t INFINITE;
 
-const char * remove_decimals(const char *str){
-	char *output;
-	unsigned int c, i, len;
-	len = 0;
-	for (i = 0; i < strlen(str); i++){
-		c = (unsigned char) str[i];
-		if(c == '.'){
-			break;
-		}
-		len = i+1;
+const char *remove_decimals(const char *str, long scaling){
+	char *found;
+	size_t loc, len;
+	int i;
+	char *decimals;
+
+	found = strchr(str, '.');
+	if (found){
+		loc = found - str;
+		len = strlen(str) - loc - 1;
+		decimals = (char*) malloc((len + 1) * sizeof(char));
+		memcpy( &decimals[0], &str[loc+1], len * sizeof( char ) );
+		decimals[len] = '\0';
+	}else{
+		loc = strlen(str);
+		decimals = (char*) malloc(1 * sizeof(char));
+		decimals[0] = '\0';
 	}
-	output = malloc(len+1);
-	strncpy(output, str, len);
-	output[len] = '\0';
+	char* output = (char*) malloc( (loc+scaling+1) * sizeof(char));
+	memcpy( &output[0], &str[0], loc * sizeof( char ) );
+	i = 0;
+	while ( (decimals[i] != '\0') & (scaling > 0) ){
+		output[loc+i] = decimals[i];
+		scaling--;
+		i++;
+	}
+	while ( scaling > 0){
+		output[loc+i] = '0';
+		scaling--;
+		i++;
+	}
+	output[loc+i] = '\0';
 	return output;
 }
 
-const char * expand_scinote(const char *str){
+const char * expand_scinote(const char *str, long scaling){
 	char *output, *ptr;
-	size_t int_size, exp_size, size;
-	const char *expptr;
-	unsigned int i, c;
+	unsigned int i, len;
+	char *mantissa, *exponent;
+	long exp;
 
-	int_size = exp_size = 0;
-	expptr = NULL;
-	for (i = 0; i < strlen(str); i++){
-		c = (unsigned char) str[i];
-		//printf("c: %c\n", c);
-		if(c == 'e' || c == 'E'){
-			if(str[i+1] == '-'){
-				output = (char *) malloc(2);
-				output[0] = '0';
-				output[1] = '\0';
-				return output;
-			}
-			expptr = str + i + 1;
-			exp_size = i;
-			if(!int_size){
-				int_size = i;
-			}
-			break;
-		}else if(c == '.'){
-			int_size = i;
-		}
+	i = 0;
+	while ( (str[i] != 'e') & (str[i] != 'E') ){
+		i++;
 	}
-	size = int_size + strtol(expptr, &ptr, 10);
-	output = malloc(size + 1);
-	output[size] = '\0';
+	mantissa = (char*) malloc( (i+1) * sizeof(char));
+	memcpy( &mantissa[0], &str[0], i * sizeof( char ) );
+	mantissa[i] = '\0';
+	i++;
+	len = strlen(str) - i;
+	exponent = (char*) malloc( (len+1) * sizeof(char));
+	memcpy( &exponent[0], &str[i], (len+1) * sizeof( char ) );
+	exponent[len+1] = '\0';
 
-	for(i = 0; i < size; i++){
-		output[i] = '0';
-	}
-	for(i = 0; i < int_size; i++){
-		output[i] = str[i];
-	}
-	for(i = int_size+1; i < exp_size; i++){
-		output[i-1] = str[i];
-	}
-	return output;
+	exp = strtol(exponent, &ptr, 10);
+	return remove_decimals(mantissa, exp + scaling);
 }
 
 struct my_edge {
@@ -297,11 +295,17 @@ static PyObject* empty_graph (){
 	Py_RETURN_NONE;
 }
 
-static PyObject* add_edge (PyObject* self, PyObject* args){
+
+static PyObject* add_edge (PyObject* self, PyObject* args, PyObject *kwargs){
 	char *source, *destination, *weight;
 	char *token, *edge_string;
-	PyObject *obj;
+	PyObject *obj, *scl;
 
+	PyObject *s = PyDict_GetItemString(PyModule_GetDict(self), "scaling");
+	Py_INCREF(s);
+	long scaling = PyLong_AsLong(s);
+	
+	//static char *kwlist[] = {(char *)"", (char *)"scaling", NULL};
 	if(!PyArg_ParseTuple(args, "O", &obj)){
 		return NULL;
 	}
@@ -339,9 +343,9 @@ static PyObject* add_edge (PyObject* self, PyObject* args){
 	if( src>=0 && dst>=0 && weight){
 		mpz_init(wgt);
 		if( (strstr(weight, "E")!=NULL) || (strstr(weight, "e")!=NULL) ) {
-			mpz_set_str(wgt, expand_scinote(weight), 10);
+			mpz_set_str(wgt,  expand_scinote(weight, scaling), 10);
 		}else{
-			mpz_set_str(wgt, remove_decimals(weight), 10);
+			mpz_set_str(wgt, remove_decimals(weight, scaling), 10);
 		}
 		_add_edge(e, src, dst, wgt);
 		mpz_clear(wgt);
@@ -359,7 +363,7 @@ static PyObject* get_path (PyObject* self, PyObject* args, PyObject *kwargs){
 	char *source, *target, *infile;
 	struct my_node *node;
 	int src, dst;
-	mpz_init_set_str(INFINITE, expand_scinote("1E1000"), 10);
+	mpz_init_set_str(INFINITE, expand_scinote("1E1000", 0), 10);
 
 	static char *kwlist[] = {(char *)"source", (char *)"target", (char *)"var", NULL};
 	if (!PyArg_ParseTupleAndKeywords(args, kwargs, "ss|s", kwlist, &source, &target, &infile)) 
@@ -476,12 +480,15 @@ static struct PyModuleDef FastPath = {
 	"FastPath",
 	"mod doc",
 	-1,
-	fastpathz_methods
+	fastpathz_methods,
 };
 // module initializer for python3
 PyMODINIT_FUNC PyInit_fastpathz(void)
 {
-	return PyModule_Create(&FastPath);
+	PyObject *m = PyModule_Create(&FastPath);
+	PyModule_AddIntConstant(m, "scaling", 0);
+	//PyModule_AddObject(m, "scaling", (PyObject *) PyUnicode_FromString("asd"));
+	return m;
 }
 //#else
 // module initializer for python2

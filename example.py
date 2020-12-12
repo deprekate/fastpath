@@ -1,9 +1,12 @@
+import sys
+
+sys.path.pop(0)
+
 import fastpath as fp
 import fastpathz as fz
 
 
 f = open("edges.txt", "r")
-
 
 #--------------------------------------------------------------------#
 # write edges to the graph
@@ -28,12 +31,12 @@ f.seek(0)
 #--------------------------------------------------------------------#
 # fastpathz only works on integers, so multiply to keep decimal accuracy
 #--------------------------------------------------------------------#
-scale = lambda a : (a[0], a[1], str(float(a[2])*1000))
+#scale = lambda a : (a[0], a[1], str(float(a[2])*1000))
 
+fz.scaling = 4
 for line in f:
-	edge = scale(tuple(line.rstrip().split("\t")))
+	edge = tuple(line.rstrip().split("\t"))
 	ret = fz.add_edge(edge)
-
 
 print("\nfastpathz (scaled)")
 for node in fz.get_path(source="A", target="Z"):

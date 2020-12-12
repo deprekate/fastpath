@@ -33,7 +33,6 @@ def get_version():
 		v = f.readline().strip()
 		return v
 
-#for package_name in ['fastpath', 'fastpathz']:
 setup (
 	name = 'fastpath',
 	version = get_version(),
