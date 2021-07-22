@@ -2,7 +2,6 @@ import os
 #from distutils.core import setup, Extension
 from setuptools import setup, Extension
 
-os.environ["CC"] = "gcc"
 compile_args = ["-Wno-unused-variable"]
 #link_args	= [""]
 
@@ -12,7 +11,7 @@ def extension(package_name):
 	else:
 		sources = ['src/fastpathz-py.c', 'src/mini-gmp.c']
 	ext = Extension(package_name,
-				language='gcc',
+				language='c',
 				extra_compile_args=compile_args,
 				#extra_link_args=link_args,
 				include_dirs=[
