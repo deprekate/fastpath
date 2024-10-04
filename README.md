@@ -20,6 +20,7 @@ weights, which can cause rounding errors if you have extremely large/small numbe
 weights (ie -1E50 or 1E50).
 This is because during the path relaxation step of the Bellmanford code, C cannot distinguish
 a difference between 1E50 and 1E50 + 1
+
 If your numbers are extremely large/small, then you can use the `fastpathz` version, which
 uses infinite-precision integers as edge weights. The downside of using `fastpathz` is that
 decimal places get dropped, so the C code does not distinguish between 1 and 1.1.  This 
